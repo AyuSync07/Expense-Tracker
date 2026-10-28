@@ -14,6 +14,25 @@ export default function ExpensesView({
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Equipment & Tech");
   const [note, setNote] = useState("");
+  const [showMobileAdd, setShowMobileAdd] = useState(false);
+
+  // Helper for mobile category icons
+  const getCategoryIcon = (cat) => {
+    switch (cat) {
+      case "Food & Dining":
+        return "restaurant";
+      case "Equipment & Tech":
+        return "laptop_chromebook";
+      case "Utilities & Bills":
+        return "bolt";
+      case "Entertainment":
+        return "sports_esports";
+      case "Shopping":
+        return "shopping_bag";
+      default:
+        return "receipt";
+    }
+  };
 
   // Date for transaction entry defaults to today's date
   const [txDate, setTxDate] = useState(todayStr);
@@ -92,6 +111,7 @@ export default function ExpensesView({
     setName("");
     setAmount("");
     setNote("");
+    setShowMobileAdd(false);
   };
 
   const totalPages = Math.ceil(filtered.length / pageSize) || 1;
@@ -294,12 +314,31 @@ export default function ExpensesView({
         </div>
       </div>
 
+      {/* Mobile Quick Action: Log New Expense Button */}
+      <div className="lg:hidden">
+        <button
+          type="button"
+          onClick={() => setShowMobileAdd((prev) => !prev)}
+          className="w-full py-3 px-4 bg-white text-zinc-950 font-['Geist'] font-semibold text-[14px] rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-white/10 active:scale-98 transition-all"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            {showMobileAdd ? "close" : "add_circle"}
+          </span>
+          <span>{showMobileAdd ? "Close Expense Form" : "+ Log New Expense"}</span>
+        </button>
+      </div>
+
       {/* Main Two-Column Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         {/* Left Column (Add Expense + Breakdown) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* Add New Expense Form */}
-          <div data-tour="expense-form" className="bg-[#121215] border border-[#27272a] rounded-xl p-6">
+          {/* Add New Expense Form (Collapsible on mobile) */}
+          <div
+            data-tour="expense-form"
+            className={`bg-[#121215] border border-[#27272a] rounded-xl p-5 sm:p-6 transition-all ${
+              showMobileAdd ? "block" : "hidden lg:block"
+            }`}
+          >
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-['Geist'] font-semibold text-[16px] text-[#fafafa]">Add New Expense</h2>
               <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] px-1.5 py-0.5 border border-[#27272a] rounded bg-[#09090b]">
@@ -547,9 +586,51 @@ export default function ExpensesView({
               </div>
             </div>
 
-            {/* Table */}
-            <div className="overflow-x-auto w-full">
-              <table className="w-full min-w-[520px] text-left border-collapse">
+            {/* Mobile Native Card Feed (Revolut / Apple Wallet Style) */}
+            <div className="lg:hidden divide-y divide-[#27272a]/60">
+              {paginated.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-3.5 sm:p-4 flex items-center justify-between gap-3 active:bg-white/[0.03] transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-[#1a1a1e] border border-[#27272a] flex items-center justify-center shrink-0 shadow-sm">
+                      <span className="material-symbols-outlined text-[19px] text-[#fafafa]">
+                        {getCategoryIcon(item.category)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-['Geist'] font-medium text-[14px] text-[#fafafa] truncate">
+                        {item.name}
+                      </span>
+                      <div className="flex items-center gap-1.5 font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] mt-0.5 truncate">
+                        <span className="truncate max-w-[120px]">{item.category}</span>
+                        <span>•</span>
+                        <span className="shrink-0">{item.displayDate}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <span className="font-['JetBrains_Mono'] font-semibold text-[14px] sm:text-[15px] text-[#fafafa]">
+                      -₹{item.amount.toFixed(2)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onDeleteExpense(item.id)}
+                      title="Delete expense"
+                      className="text-[#a1a1aa] hover:text-[#ef4444] p-1.5 rounded-lg active:scale-95 transition-all cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[17px]">delete</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Full Table View */}
+            <div className="hidden lg:block overflow-x-auto w-full">
+              <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-[#27272a] bg-[#09090b]/60 font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] uppercase">
                     <th className="py-3 px-5 font-normal tracking-wider">Expense Name</th>

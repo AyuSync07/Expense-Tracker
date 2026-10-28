@@ -460,7 +460,42 @@ export default function AnalyticsView({ expenses }) {
           </div>
         </div>
 
-        <div className="overflow-x-auto w-full">
+        {/* Mobile Category List View */}
+        <div className="md:hidden divide-y divide-[#27272a]/60">
+          {sortedCategories.length === 0 ? (
+            <div className="p-6 text-center text-[#a1a1aa] text-[13px]">
+              No categorized expenses recorded yet.
+            </div>
+          ) : (
+            sortedCategories.map((c) => (
+              <div key={c.name} className="p-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-['Geist'] font-medium text-[14px] text-white truncate">
+                      {c.name}
+                    </span>
+                    <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa]">
+                      {c.count} items • {c.percentage.toFixed(1)}% share
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <div className="font-['JetBrains_Mono'] font-bold text-[15px] text-white">
+                    ₹{c.sum.toFixed(2)}
+                  </div>
+                  <div className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa]">
+                    ₹{c.avg}/item
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto w-full">
           <table className="w-full min-w-[540px] text-left font-['Geist'] text-[14px] text-[#e4e1e6]">
             <thead className="font-['JetBrains_Mono'] text-[11px] uppercase text-[#a1a1aa] tracking-wider bg-[#0e0e11] border-y border-[#27272a]">
               <tr>

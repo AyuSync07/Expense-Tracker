@@ -139,82 +139,135 @@ export default function BudgetsView({
       </div>
 
       {/* 3-Way Linked Budget Synchronizer Ribbon */}
-      <div data-tour="budget-sync-card" className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* Daily Card */}
-        <div
-          onClick={() => setPeriod("daily")}
-          className={`bg-[#121215] border rounded-xl p-5 flex flex-col justify-between transition-all cursor-pointer ${
-            period === "daily" ? "border-[#fafafa] ring-1 ring-[#fafafa]/20" : "border-[#27272a] hover:border-[#a1a1aa]"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-['Geist'] text-[14px] text-[#a1a1aa] font-medium">Daily Allowance</span>
-            <span className="font-['JetBrains_Mono'] text-[10px] text-[#a1a1aa] px-2 py-0.5 rounded bg-[#09090b] border border-[#27272a]">
-              Monthly ÷ 30
-            </span>
+      <div data-tour="budget-sync-card">
+        {/* Mobile-First Compact Segmented Card (Phones & Small Screens) */}
+        <div className="md:hidden bg-[#121215] border border-[#27272a] rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+          {/* Segmented Switcher */}
+          <div className="grid grid-cols-3 p-1 bg-[#09090b] rounded-xl border border-[#27272a]">
+            {[
+              { id: "daily", label: "Daily" },
+              { id: "monthly", label: "Monthly" },
+              { id: "yearly", label: "Yearly" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setPeriod(tab.id)}
+                className={`py-1.5 text-center font-['JetBrains_Mono'] text-[12px] font-medium rounded-lg transition-all cursor-pointer ${
+                  period === tab.id
+                    ? "bg-white text-zinc-950 shadow-sm"
+                    : "text-[#a1a1aa] hover:text-white"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-          <div className="my-3">
-            <div className="font-['JetBrains_Mono'] font-semibold text-[26px] text-[#fafafa]">
-              ₹{dailyLimit.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+
+          {/* Active Limit Display */}
+          <div className="flex items-center justify-between pt-1">
+            <div className="space-y-0.5">
+              <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] uppercase tracking-wider block">
+                {periodLabel} Target
+              </span>
+              <div className="font-['JetBrains_Mono'] font-bold text-[28px] text-white tracking-tight">
+                ₹{currentOverallLimit.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+              </div>
             </div>
-            <div className="font-['Geist'] text-[12px] text-[#a1a1aa] mt-0.5">
-              Target spending for today
+
+            <div className="text-right space-y-0.5">
+              <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] uppercase tracking-wider block">
+                Remaining
+              </span>
+              <div
+                className={`font-['JetBrains_Mono'] font-bold text-[18px] ${
+                  isOverBudget ? "text-rose-400" : "text-emerald-400"
+                }`}
+              >
+                {isOverBudget ? `-₹${(totalSpent - currentOverallLimit).toFixed(2)}` : `₹${remaining.toFixed(2)}`}
+              </div>
             </div>
-          </div>
-          <div className="pt-2 border-t border-[#27272a] font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8]">
-            {period === "daily" ? "● Currently active view" : "Click to view daily"}
           </div>
         </div>
 
-        {/* Monthly Card */}
-        <div
-          onClick={() => setPeriod("monthly")}
-          className={`bg-[#121215] border rounded-xl p-5 flex flex-col justify-between transition-all cursor-pointer ${
-            period === "monthly" ? "border-[#fafafa] ring-1 ring-[#fafafa]/20" : "border-[#27272a] hover:border-[#a1a1aa]"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-['Geist'] text-[14px] text-[#a1a1aa] font-medium">Monthly Budget</span>
-            <span className="font-['JetBrains_Mono'] text-[10px] text-[#a1a1aa] px-2 py-0.5 rounded bg-[#09090b] border border-[#27272a]">
-              Base Budget
-            </span>
-          </div>
-          <div className="my-3">
-            <div className="font-['JetBrains_Mono'] font-semibold text-[26px] text-[#fafafa]">
-              ₹{monthlyLimit.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+        {/* Desktop 3-Card Ribbon */}
+        <div className="hidden md:grid md:grid-cols-3 gap-5">
+          {/* Daily Card */}
+          <div
+            onClick={() => setPeriod("daily")}
+            className={`bg-[#121215] border rounded-xl p-5 flex flex-col justify-between transition-all cursor-pointer ${
+              period === "daily" ? "border-[#fafafa] ring-1 ring-[#fafafa]/20" : "border-[#27272a] hover:border-[#a1a1aa]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-['Geist'] text-[14px] text-[#a1a1aa] font-medium">Daily Allowance</span>
+              <span className="font-['JetBrains_Mono'] text-[10px] text-[#a1a1aa] px-2 py-0.5 rounded bg-[#09090b] border border-[#27272a]">
+                Monthly ÷ 30
+              </span>
             </div>
-            <div className="font-['Geist'] text-[12px] text-[#a1a1aa] mt-0.5">
-              Target spending this month
+            <div className="my-3">
+              <div className="font-['JetBrains_Mono'] font-semibold text-[26px] text-[#fafafa]">
+                ₹{dailyLimit.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+              </div>
+              <div className="font-['Geist'] text-[12px] text-[#a1a1aa] mt-0.5">
+                Target spending for today
+              </div>
+            </div>
+            <div className="pt-2 border-t border-[#27272a] font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8]">
+              {period === "daily" ? "● Currently active view" : "Click to view daily"}
             </div>
           </div>
-          <div className="pt-2 border-t border-[#27272a] font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8]">
-            {period === "monthly" ? "● Currently active view" : "Click to view monthly"}
-          </div>
-        </div>
 
-        {/* Yearly Card */}
-        <div
-          onClick={() => setPeriod("yearly")}
-          className={`bg-[#121215] border rounded-xl p-5 flex flex-col justify-between transition-all cursor-pointer ${
-            period === "yearly" ? "border-[#fafafa] ring-1 ring-[#fafafa]/20" : "border-[#27272a] hover:border-[#a1a1aa]"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-['Geist'] text-[14px] text-[#a1a1aa] font-medium">Yearly Total</span>
-            <span className="font-['JetBrains_Mono'] text-[10px] text-[#a1a1aa] px-2 py-0.5 rounded bg-[#09090b] border border-[#27272a]">
-              Monthly × 12
-            </span>
-          </div>
-          <div className="my-3">
-            <div className="font-['JetBrains_Mono'] font-semibold text-[26px] text-[#fafafa]">
-              ₹{yearlyLimit.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+          {/* Monthly Card */}
+          <div
+            onClick={() => setPeriod("monthly")}
+            className={`bg-[#121215] border rounded-xl p-5 flex flex-col justify-between transition-all cursor-pointer ${
+              period === "monthly" ? "border-[#fafafa] ring-1 ring-[#fafafa]/20" : "border-[#27272a] hover:border-[#a1a1aa]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-['Geist'] text-[14px] text-[#a1a1aa] font-medium">Monthly Budget</span>
+              <span className="font-['JetBrains_Mono'] text-[10px] text-[#a1a1aa] px-2 py-0.5 rounded bg-[#09090b] border border-[#27272a]">
+                Base Budget
+              </span>
             </div>
-            <div className="font-['Geist'] text-[12px] text-[#a1a1aa] mt-0.5">
-              Target spending this year
+            <div className="my-3">
+              <div className="font-['JetBrains_Mono'] font-semibold text-[26px] text-[#fafafa]">
+                ₹{monthlyLimit.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+              </div>
+              <div className="font-['Geist'] text-[12px] text-[#a1a1aa] mt-0.5">
+                Target spending this month
+              </div>
+            </div>
+            <div className="pt-2 border-t border-[#27272a] font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8]">
+              {period === "monthly" ? "● Currently active view" : "Click to view monthly"}
             </div>
           </div>
-          <div className="pt-2 border-t border-[#27272a] font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8]">
-            {period === "yearly" ? "● Currently active view" : "Click to view yearly"}
+
+          {/* Yearly Card */}
+          <div
+            onClick={() => setPeriod("yearly")}
+            className={`bg-[#121215] border rounded-xl p-5 flex flex-col justify-between transition-all cursor-pointer ${
+              period === "yearly" ? "border-[#fafafa] ring-1 ring-[#fafafa]/20" : "border-[#27272a] hover:border-[#a1a1aa]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-['Geist'] text-[14px] text-[#a1a1aa] font-medium">Yearly Total</span>
+              <span className="font-['JetBrains_Mono'] text-[10px] text-[#a1a1aa] px-2 py-0.5 rounded bg-[#09090b] border border-[#27272a]">
+                Monthly × 12
+              </span>
+            </div>
+            <div className="my-3">
+              <div className="font-['JetBrains_Mono'] font-semibold text-[26px] text-[#fafafa]">
+                ₹{yearlyLimit.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+              </div>
+              <div className="font-['Geist'] text-[12px] text-[#a1a1aa] mt-0.5">
+                Target spending this year
+              </div>
+            </div>
+            <div className="pt-2 border-t border-[#27272a] font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8]">
+              {period === "yearly" ? "● Currently active view" : "Click to view yearly"}
+            </div>
           </div>
         </div>
       </div>
