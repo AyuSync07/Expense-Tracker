@@ -1,9 +1,6 @@
 {
   "name": "expense-tracker-workspace",
   "private": true,
-  "workspaces": [
-    "expense-tracker"
-  ],
   "scripts": {
     "dev": "npm --prefix expense-tracker run dev",
     "build": "npm --prefix expense-tracker run build",
