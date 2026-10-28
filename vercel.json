@@ -1,0 +1,12 @@
+{
+  "installCommand": "npm --prefix expense-tracker install",
+  "buildCommand": "npm --prefix expense-tracker run build",
+  "outputDirectory": "expense-tracker/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
