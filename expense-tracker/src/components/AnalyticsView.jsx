@@ -64,7 +64,7 @@ export default function AnalyticsView({ expenses }) {
     };
   }, { list: [], accumulated: 0 }).list;
 
-  // Dynamic Daily Spending Trend calculated from real expenses
+  // Daily Spending Trend calculated from real expenses
   const dailySpendingMap = {};
   filteredExpenses.forEach((e) => {
     const d = new Date(e.date);
@@ -86,8 +86,8 @@ export default function AnalyticsView({ expenses }) {
     };
   });
 
-  // Calculate Peak velocity day of week from real data
-  const dayOfWeekNames = ["Sundays", "Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays"];
+  // Calculate day with the highest spending
+  const dayOfWeekNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const dayOfWeekCounts = {};
   filteredExpenses.forEach((e) => {
     const dow = new Date(e.date).getDay();
@@ -110,40 +110,40 @@ export default function AnalyticsView({ expenses }) {
   }
 
   const handleExportReportCSV = () => {
-    let csv = "Category,Total Spent,Percent of Total,Payments,Average / Expense\n";
+    let csv = "Category,Total Spent,Percent of Total,Transactions,Average Per Expense\n";
     sortedCategories.forEach((c) => {
       csv += `"${c.name}","₹${c.sum.toFixed(2)}","${c.percentage.toFixed(1)}%","${c.count}","₹${c.avg}"\n`;
     });
-    csv += `"Total Aggregation","₹${totalSpent.toFixed(2)}","100%","${filteredExpenses.length}","₹${dailyAverage}"\n`;
+    csv += `"Total Spent","₹${totalSpent.toFixed(2)}","100%","${filteredExpenses.length}","₹${dailyAverage}"\n`;
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "analytics-report.csv";
+    a.download = "spending-analytics-report.csv";
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="max-w-7xl mx-auto w-full px-6 lg:px-12 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-12 py-8 space-y-8">
       {/* Header & Controls Bar */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6">
-        <div className="space-y-1.5">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] uppercase tracking-wider">
-              Ledger Intelligence
+              Spending Insights
             </span>
           </div>
           <h1 className="font-['Geist'] font-semibold text-[32px] text-[#fafafa] tracking-tight">
             Analytics &amp; Spending Trends
           </h1>
           <p className="font-['Geist'] text-[14px] text-[#a1a1aa]">
-            Visual overview of your spending habits and category breakdowns.
+            Simple visual breakdown of where your money goes and daily spending patterns.
           </p>
         </div>
 
-        {/* Segmented Time Range Selector */}
+        {/* Time Range Selector */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="inline-flex p-1 bg-[#121215] rounded-lg border border-[#27272a]">
             {[
@@ -174,17 +174,18 @@ export default function AnalyticsView({ expenses }) {
             className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#121215] border border-[#27272a] hover:bg-[#1f1f22] rounded-lg font-['JetBrains_Mono'] text-[12px] text-[#e4e1e6] hover:text-[#fafafa] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined text-[16px]">file_download</span>
-            <span>Report CSV</span>
+            <span>Download CSV</span>
           </button>
         </div>
       </div>
 
-      {/* Quick Stats Metric Ticker */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* 3 Metric Cards */}
+      <div data-tour="analytics-metric-ribbon" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Card 1: Total Money Spent */}
         <div className="bg-[#121215] border border-[#27272a] p-5 rounded-xl flex items-center justify-between">
           <div className="space-y-1">
             <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] uppercase tracking-wider block">
-              Total Outflow
+              Total Money Spent
             </span>
             <div className="font-['JetBrains_Mono'] text-[30px] font-semibold text-[#fafafa] tracking-tight">
               ₹{totalSpent.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -195,10 +196,11 @@ export default function AnalyticsView({ expenses }) {
           </div>
         </div>
 
+        {/* Card 2: Average Spent Per Day */}
         <div className="bg-[#121215] border border-[#27272a] p-5 rounded-xl flex items-center justify-between">
           <div className="space-y-1">
             <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] uppercase tracking-wider block">
-              Daily Average
+              Average Spent Per Day
             </span>
             <div className="font-['JetBrains_Mono'] text-[30px] font-semibold text-[#fafafa] tracking-tight">
               ₹{dailyAverage}
@@ -209,15 +211,18 @@ export default function AnalyticsView({ expenses }) {
           </div>
         </div>
 
+        {/* Card 3: Highest Spending Day */}
         <div className="bg-[#121215] border border-[#27272a] p-5 rounded-xl flex items-center justify-between">
           <div className="space-y-1">
             <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] uppercase tracking-wider block">
-              Peak Velocity Day
+              Heaviest Spending Day
             </span>
             <div className="font-['JetBrains_Mono'] text-[30px] font-semibold text-[#fafafa] tracking-tight">
               {peakDayName}{" "}
               {totalSpent > 0 && (
-                <span className="font-['JetBrains_Mono'] text-[12px] font-normal text-[#a1a1aa]">({peakPercent}%)</span>
+                <span className="font-['JetBrains_Mono'] text-[12px] font-normal text-[#a1a1aa]">
+                  ({peakPercent}% of total)
+                </span>
               )}
             </div>
           </div>
@@ -227,36 +232,74 @@ export default function AnalyticsView({ expenses }) {
         </div>
       </div>
 
-      {/* Visual Breakdown Row (Two-Column Grid) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Visual Breakdown Row */}
+      <div data-tour="charts-container" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Card A: Category Donut Chart */}
         <div className="bg-[#121215] border border-[#27272a] p-6 lg:p-7 rounded-xl flex flex-col justify-between min-h-[360px]">
           <div className="flex items-center justify-between pb-4">
             <div className="space-y-0.5">
               <h2 className="font-['Geist'] font-semibold text-[20px] text-[#fafafa]">Spending by Category</h2>
               <p className="font-['Geist'] text-[12px] text-[#a1a1aa]">
-                Proportional outflow allocation across active accounts
+                How your money is shared across different categories
               </p>
             </div>
             <span className="font-['JetBrains_Mono'] text-[11px] px-2 py-0.5 rounded bg-[#1f1f22] text-[#a1a1aa] uppercase">
-              {sortedCategories.length} Buckets
+              {sortedCategories.length} Categories
             </span>
           </div>
 
           {sortedCategories.length === 0 ? (
-            <div className="my-auto py-12 flex flex-col items-center justify-center text-center">
-              <span className="material-symbols-outlined text-[32px] text-[#a1a1aa] mb-2">pie_chart</span>
-              <p className="font-['JetBrains_Mono'] text-[12px] text-[#fafafa]">No category data available</p>
-              <p className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] mt-1">
-                Add expenses in the Expenses tab to view breakdown
-              </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-6 my-auto py-4">
+              {/* Elegant Empty Donut Ring */}
+              <div className="relative flex items-center justify-center">
+                <svg
+                  aria-label="Empty Category Donut Chart"
+                  className="w-48 h-48 -rotate-90 transform"
+                  viewBox="0 0 100 100"
+                >
+                  <circle cx="50" cy="50" fill="transparent" r="38" stroke="#1f1f22" strokeWidth="12" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    fill="transparent"
+                    r="38"
+                    stroke="#27272a"
+                    strokeWidth="12"
+                    strokeDasharray="4 8"
+                    className="opacity-60"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                  <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] uppercase tracking-wider">
+                    Total
+                  </span>
+                  <span className="font-['JetBrains_Mono'] text-[15px] font-semibold text-[#fafafa]">
+                    ₹0.00
+                  </span>
+                  <span className="font-['JetBrains_Mono'] text-[10px] text-[#a1a1aa]">0% Spent</span>
+                </div>
+              </div>
+
+              {/* Empty state hint */}
+              <div className="space-y-2 text-left">
+                <div className="font-['Geist'] text-[13px] font-medium text-[#fafafa]">
+                  Awaiting Expenses
+                </div>
+                <p className="font-['Geist'] text-[12px] text-[#a1a1aa] leading-relaxed">
+                  As you log purchases, this donut chart will automatically slice into colored category shares.
+                </p>
+                <div className="flex items-center gap-2 pt-1 font-['JetBrains_Mono'] text-[11px] text-[#71717a]">
+                  <span className="w-2 h-2 rounded-full bg-[#3f3f46]"></span>
+                  <span>5 Categories Ready</span>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-6 my-auto py-4">
               {/* Donut SVG */}
               <div className="relative flex items-center justify-center">
                 <svg
-                  aria-label="Monochrome Category Donut Chart"
+                  aria-label="Category Donut Chart"
                   className="w-48 h-48 -rotate-90 transform"
                   viewBox="0 0 100 100"
                 >
@@ -285,7 +328,7 @@ export default function AnalyticsView({ expenses }) {
                   <span className="font-['JetBrains_Mono'] text-[14px] font-semibold text-[#fafafa]">
                     ₹{Math.round(totalSpent).toLocaleString("en-IN")}
                   </span>
-                  <span className="font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8]">100.0%</span>
+                  <span className="font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8]">100%</span>
                 </div>
               </div>
 
@@ -308,8 +351,8 @@ export default function AnalyticsView({ expenses }) {
           )}
 
           <div className="pt-4 flex items-center justify-between font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] border-t border-[#27272a]/60">
-            <span>{sortedCategories.length > 0 ? `Top Category: ${sortedCategories[0].name}` : "No expenses recorded"}</span>
-            <span className="font-medium text-[#fafafa]">{filteredExpenses.length} Txns Recorded</span>
+            <span>{sortedCategories.length > 0 ? `Biggest Expense: ${sortedCategories[0].name}` : "No expenses recorded"}</span>
+            <span className="font-medium text-[#fafafa]">{filteredExpenses.length} Total Expenses</span>
           </div>
         </div>
 
@@ -317,28 +360,41 @@ export default function AnalyticsView({ expenses }) {
         <div className="bg-[#121215] border border-[#27272a] p-6 lg:p-7 rounded-xl flex flex-col justify-between min-h-[360px]">
           <div className="flex items-center justify-between pb-4">
             <div className="space-y-0.5">
-              <h2 className="font-['Geist'] font-semibold text-[20px] text-[#fafafa]">Monthly Spending Trend</h2>
+              <h2 className="font-['Geist'] font-semibold text-[20px] text-[#fafafa]">Daily Spending Chart</h2>
               <p className="font-['Geist'] text-[12px] text-[#a1a1aa]">
-                Daily aggregated outflow
+                See how much you spent on each day
               </p>
             </div>
             {dynamicBars.length > 0 && (
               <div className="hidden sm:flex items-center gap-4 font-['JetBrains_Mono'] text-[11px]">
                 <div className="flex items-center gap-1.5 text-[#a1a1aa]">
                   <span className="w-2 h-2 rounded bg-[#fafafa]"></span>
-                  <span>Daily Spend</span>
+                  <span>Daily Amount</span>
                 </div>
               </div>
             )}
           </div>
 
           {dynamicBars.length === 0 ? (
-            <div className="my-auto py-12 flex flex-col items-center justify-center text-center">
-              <span className="material-symbols-outlined text-[32px] text-[#a1a1aa] mb-2">bar_chart</span>
-              <p className="font-['JetBrains_Mono'] text-[12px] text-[#fafafa]">No spending activity to chart</p>
-              <p className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] mt-1">
-                Recorded expenses will automatically populate the daily trend
-              </p>
+            <div className="py-4">
+              <div className="relative h-44 w-full flex items-end justify-between gap-2 px-4 border border-dashed border-[#27272a] rounded-lg">
+                {[15, 25, 40, 20, 60, 30, 45, 18, 35, 12].map((mockH, idx) => (
+                  <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end opacity-20">
+                    <div
+                      className="w-full max-w-[20px] rounded-t bg-[#fafafa]"
+                      style={{ height: `${mockH}%` }}
+                    />
+                    <span className="mt-2 font-['JetBrains_Mono'] text-[10px] text-[#a1a1aa]">
+                      --
+                    </span>
+                  </div>
+                ))}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-[#121215]/85 rounded-lg">
+                  <span className="material-symbols-outlined text-[26px] text-[#a1a1aa] mb-1">bar_chart</span>
+                  <span className="font-['Geist'] text-[13px] font-medium text-[#fafafa]">Daily Trend Ready</span>
+                  <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa]">Awaiting first recorded transaction</span>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="py-4">
@@ -365,7 +421,7 @@ export default function AnalyticsView({ expenses }) {
                     {/* Tooltip */}
                     <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
                       <div className="bg-[#353438] px-2 py-1 rounded text-[#fafafa] font-['JetBrains_Mono'] text-[11px] shadow-md whitespace-nowrap">
-                        Day {bar.label}: ₹{bar.amount.toFixed(2)} {bar.isPeak ? "(Peak)" : ""}
+                        Day {bar.label}: ₹{bar.amount.toFixed(2)} {bar.isPeak ? "(Highest)" : ""}
                       </div>
                     </div>
                   </div>
@@ -375,8 +431,8 @@ export default function AnalyticsView({ expenses }) {
           )}
 
           <div className="pt-4 flex items-center justify-between font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] border-t border-[#27272a]/60">
-            <span>{dynamicBars.length > 0 ? `Active Days: ${dynamicBars.length}` : "No daily records"}</span>
-            <span className="text-[#fafafa] font-medium">₹{dailyAverage}/d Average</span>
+            <span>{dynamicBars.length > 0 ? `${dynamicBars.length} Active Days With Spending` : "No activity"}</span>
+            <span className="text-[#fafafa] font-medium">₹{dailyAverage} Per Day Average</span>
           </div>
         </div>
       </div>
@@ -385,9 +441,9 @@ export default function AnalyticsView({ expenses }) {
       <div className="bg-[#121215] border border-[#27272a] rounded-xl overflow-hidden shadow-sm">
         <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="font-['Geist'] font-semibold text-[20px] text-[#fafafa]">Category Spending Details</h2>
+            <h2 className="font-['Geist'] font-semibold text-[20px] text-[#fafafa]">Category Spending Breakdown</h2>
             <p className="font-['Geist'] text-[14px] text-[#a1a1aa]">
-              Disaggregated metrics and category totals
+              Detailed table showing total spent per category
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -397,9 +453,9 @@ export default function AnalyticsView({ expenses }) {
               onChange={(e) => setSortBy(e.target.value)}
               className="bg-[#1f1f22] border border-[#27272a] text-[#fafafa] font-['JetBrains_Mono'] text-[11px] px-2.5 py-1 rounded focus:outline-none cursor-pointer"
             >
-              <option value="total_desc">Total Spent (Desc)</option>
-              <option value="count_desc">Transaction Count</option>
-              <option value="name_asc">Category Name</option>
+              <option value="total_desc">Highest Amount First</option>
+              <option value="count_desc">Most Transactions First</option>
+              <option value="name_asc">Category Name (A-Z)</option>
             </select>
           </div>
         </div>
@@ -410,9 +466,9 @@ export default function AnalyticsView({ expenses }) {
               <tr>
                 <th className="py-3 px-6 font-medium">Category</th>
                 <th className="py-3 px-6 text-right font-medium">Total Spent</th>
-                <th className="py-3 px-6 text-right font-medium">% of Total</th>
-                <th className="py-3 px-6 text-right font-medium">Payments</th>
-                <th className="py-3 px-6 text-right font-medium">Average / Expense</th>
+                <th className="py-3 px-6 text-right font-medium">% Share</th>
+                <th className="py-3 px-6 text-right font-medium">Transactions</th>
+                <th className="py-3 px-6 text-right font-medium">Average Per Item</th>
               </tr>
             </thead>
             <tbody className="font-['JetBrains_Mono'] text-[12px] divide-y divide-[#27272a]">
@@ -431,7 +487,7 @@ export default function AnalyticsView({ expenses }) {
                     </td>
                     <td className="py-3.5 px-6 text-right text-[#fafafa] font-medium">₹{c.sum.toFixed(2)}</td>
                     <td className="py-3.5 px-6 text-right text-[#c4c7c8]">{c.percentage.toFixed(1)}%</td>
-                    <td className="py-3.5 px-6 text-right text-[#c4c7c8]">{c.count} payments</td>
+                    <td className="py-3.5 px-6 text-right text-[#c4c7c8]">{c.count} items</td>
                     <td className="py-3.5 px-6 text-right text-[#c4c7c8]">₹{c.avg}</td>
                   </tr>
                 ))
@@ -439,23 +495,16 @@ export default function AnalyticsView({ expenses }) {
             </tbody>
             <tfoot className="bg-[#0e0e11] font-['JetBrains_Mono'] text-[12px] border-t border-[#27272a]">
               <tr>
-                <th className="py-4 px-6 text-[#fafafa] font-semibold">Total Aggregation</th>
+                <th className="py-4 px-6 text-[#fafafa] font-semibold">Total</th>
                 <td className="py-4 px-6 text-right text-[#fafafa] font-bold text-[16px] font-['Geist']">
                   ₹{totalSpent.toFixed(2)}
                 </td>
                 <td className="py-4 px-6 text-right text-[#a1a1aa]">{totalSpent > 0 ? "100.0%" : "0%"}</td>
-                <td className="py-4 px-6 text-right text-[#a1a1aa]">{filteredExpenses.length} payments</td>
+                <td className="py-4 px-6 text-right text-[#a1a1aa]">{filteredExpenses.length} items</td>
                 <td className="py-4 px-6 text-right text-[#a1a1aa]">₹{dailyAverage} avg</td>
               </tr>
             </tfoot>
           </table>
-        </div>
-
-        <div className="px-6 py-3.5 bg-[#1b1b1e] border-t border-[#27272a] flex flex-col sm:flex-row items-center justify-between gap-2 font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa]">
-          <span>Displaying ledger reconciliation across {sortedCategories.length} active expense categories</span>
-          <span className="text-[#fafafa]">
-            Ledger status: {filteredExpenses.length > 0 ? `Balanced (₹${totalSpent.toFixed(2)} across ${filteredExpenses.length} payments)` : "Empty"}
-          </span>
         </div>
       </div>
     </div>

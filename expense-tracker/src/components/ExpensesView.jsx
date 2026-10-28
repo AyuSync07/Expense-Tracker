@@ -3,6 +3,7 @@ import { CATEGORIES } from "../data";
 
 export default function ExpensesView({
   expenses,
+  budgets,
   onAddExpense,
   onDeleteExpense,
   selectedDate,
@@ -43,11 +44,21 @@ export default function ExpensesView({
     return matchesSearch && matchesCategory && matchesDate;
   });
 
+  // Dynamic budget limit based on filterMode:
+  // Daily budget = baseMonthly / 30; Monthly = baseMonthly; All Time = baseMonthly * 12
+  const baseMonthly = budgets?.baseMonthly || 0;
+  const activeBudgetLimit =
+    filterMode === "SELECTED_DATE"
+      ? baseMonthly / 30
+      : filterMode === "SELECTED_MONTH"
+      ? baseMonthly
+      : baseMonthly * 12;
+
   // Metrics computed over filtered set
   const totalSpent = filtered.reduce((sum, item) => sum + item.amount, 0);
-  const monthlyBudget = 6000;
-  const budgetLeft = Math.max(0, monthlyBudget - totalSpent);
-  const budgetUsedPercent = Math.min(100, (totalSpent / monthlyBudget) * 100).toFixed(1);
+  const budgetLeft = Math.max(0, activeBudgetLimit - totalSpent);
+  const budgetUsedPercent =
+    activeBudgetLimit > 0 ? Math.min(100, (totalSpent / activeBudgetLimit) * 100).toFixed(1) : "0.0";
 
   // Category breakdown calculations
   const categoryStats = CATEGORIES.map((cat) => {
@@ -225,11 +236,13 @@ export default function ExpensesView({
             <div className="flex items-center gap-1.5 font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa]">
               <span>Budget left:</span>
               <span className="text-[#fafafa] font-medium">
-                ₹{budgetLeft.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {activeBudgetLimit > 0
+                  ? `₹${budgetLeft.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : "No budget set"}
               </span>
             </div>
             <span className="font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8] bg-[#1f1f22] px-2 py-0.5 rounded">
-              {budgetUsedPercent}% used
+              {activeBudgetLimit > 0 ? `${budgetUsedPercent}% used` : "0% used"}
             </span>
           </div>
         </div>
@@ -286,7 +299,7 @@ export default function ExpensesView({
         {/* Left Column (Add Expense + Breakdown) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           {/* Add New Expense Form */}
-          <div className="bg-[#121215] border border-[#27272a] rounded-xl p-6">
+          <div data-tour="expense-form" className="bg-[#121215] border border-[#27272a] rounded-xl p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-['Geist'] font-semibold text-[16px] text-[#fafafa]">Add New Expense</h2>
               <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] px-1.5 py-0.5 border border-[#27272a] rounded bg-[#09090b]">
@@ -470,7 +483,7 @@ export default function ExpensesView({
 
         {/* Right Column (Ledger Table) */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          <div className="bg-[#121215] border border-[#27272a] rounded-xl overflow-hidden flex flex-col">
+          <div data-tour="expense-ledger-table" className="bg-[#121215] border border-[#27272a] rounded-xl overflow-hidden flex flex-col">
             {/* Header & Controls */}
             <div className="p-6 border-b border-[#27272a] flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

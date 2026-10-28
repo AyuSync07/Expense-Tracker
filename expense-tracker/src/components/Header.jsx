@@ -4,17 +4,21 @@ export default function Header({
   currentView,
   setCurrentView,
   onReset,
+  onOpenTutorial = () => {},
   selectedDate,
   setSelectedDate,
-  todayStr
+  todayStr,
+  userName,
+  onUpdateUserName
 }) {
-  const [userName, setUserName] = useState(() => {
-    return localStorage.getItem("stitch_expense_tracker_user") || "";
-  });
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [tempName, setTempName] = useState("");
+  const [tempName, setTempName] = useState(userName || "");
   const dropdownRef = useRef(null);
   const dateInputRef = useRef(null);
+
+  useEffect(() => {
+    setTempName(userName || "");
+  }, [userName]);
 
   // Close popup if clicking outside
   useEffect(() => {
@@ -39,12 +43,7 @@ export default function Header({
   const handleSaveName = (e) => {
     e.preventDefault();
     const trimmed = tempName.trim();
-    setUserName(trimmed);
-    if (trimmed) {
-      localStorage.setItem("stitch_expense_tracker_user", trimmed);
-    } else {
-      localStorage.removeItem("stitch_expense_tracker_user");
-    }
+    onUpdateUserName(trimmed);
     setShowProfileModal(false);
   };
 
@@ -67,7 +66,7 @@ export default function Header({
     : "Pick Date";
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-[#09090b]/95 backdrop-blur-sm border-b border-[#27272a]">
+    <header className="fixed top-0 left-0 w-full z-30 bg-[#09090b]/95 backdrop-blur-sm border-b border-[#27272a]">
       <div className="h-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between gap-4">
         {/* Brand & Left Date Picker */}
         <div className="flex items-center gap-3 shrink-0">
@@ -78,21 +77,21 @@ export default function Header({
             </span>
           </div>
 
-          {/* Interactive Date Picker Widget in Top Left */}
-          <div className="relative flex items-center">
+          {/* Interactive Date Picker Widget with prominent highlight container */}
+          <div data-tour="header-calendar-filter" className="relative flex items-center">
             <div
               onClick={() => dateInputRef.current?.showPicker?.() || dateInputRef.current?.focus()}
-              className="flex items-center gap-1.5 px-2.5 py-1 border border-[#27272a] bg-[#121215] hover:border-[#fafafa] transition-colors rounded cursor-pointer group"
+              className="flex items-center gap-2 px-3 py-1.5 border border-[#27272a] bg-[#121215] hover:border-[#fafafa] hover:bg-[#1a1a1e] transition-all rounded-lg cursor-pointer group shadow-sm"
               title="Click to view expenses for a previous or specific date"
             >
-              <span className="material-symbols-outlined text-[15px] text-[#c4c7c8] group-hover:text-[#fafafa]">
+              <span className="material-symbols-outlined text-[17px] text-[#fafafa] group-hover:scale-110 transition-transform">
                 calendar_month
               </span>
-              <span className="font-['JetBrains_Mono'] text-[11px] text-[#fafafa] font-medium">
+              <span className="font-['JetBrains_Mono'] text-[12px] text-[#fafafa] font-medium tracking-tight">
                 {displayDateFormatted}
               </span>
               {isToday && (
-                <span className="text-[10px] bg-[#27272a] px-1.5 py-0.2 rounded text-[#a1a1aa] font-['JetBrains_Mono']">
+                <span className="text-[10px] bg-[#27272a] px-1.5 py-0.5 rounded text-[#a1a1aa] font-['JetBrains_Mono']">
                   Today
                 </span>
               )}
@@ -129,6 +128,17 @@ export default function Header({
         <nav className="flex items-center gap-6 h-14">
           <button
             type="button"
+            onClick={() => setCurrentView("budgets")}
+            className={`h-full inline-flex items-center transition-colors text-[14px] font-['Geist'] cursor-pointer ${
+              currentView === "budgets"
+                ? "text-[#fafafa] border-b-2 border-[#ffffff] font-medium"
+                : "text-[#c4c7c8] hover:text-[#fafafa]"
+            }`}
+          >
+            Budgets
+          </button>
+          <button
+            type="button"
             onClick={() => setCurrentView("expenses")}
             className={`h-full inline-flex items-center transition-colors text-[14px] font-['Geist'] cursor-pointer ${
               currentView === "expenses"
@@ -153,35 +163,53 @@ export default function Header({
 
         {/* Action Controls & Profile */}
         <div className="flex items-center gap-3 shrink-0">
+          {/* Quick Tour Replay Button */}
+          <button
+            type="button"
+            onClick={onOpenTutorial}
+            title="Replay Interactive Tour"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#27272a] bg-[#121215] hover:border-[#fafafa] hover:text-[#fafafa] transition-colors font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8] rounded-lg cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[15px] text-[#fafafa]">help</span>
+            <span className="hidden sm:inline">? Quick Tour</span>
+          </button>
+
           <button
             type="button"
             onClick={onReset}
             title="Clear all expense data"
-            className="flex items-center gap-1.5 px-2.5 py-1 border border-[#27272a] bg-[#121215] hover:bg-[#1f1f22] hover:text-[#ef4444] transition-colors font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8] rounded cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#27272a] bg-[#121215] hover:bg-[#1f1f22] hover:text-[#ef4444] transition-colors font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8] rounded-lg cursor-pointer"
           >
             <span className="material-symbols-outlined text-[14px]">restart_alt</span>
             <span className="hidden sm:inline">Clear Data</span>
           </button>
 
           {/* Profile Trigger & Dropdown */}
-          <div className="relative" ref={dropdownRef}>
+          <div data-tour="profile-avatar-button" className="relative" ref={dropdownRef}>
             <button
               type="button"
               onClick={handleOpenProfile}
-              title={userName ? `Logged in as ${userName}` : "Set Profile Name"}
-              className="h-8 px-2 rounded-full bg-[#121215] border border-[#27272a] flex items-center justify-center gap-1.5 text-[#fafafa] hover:border-[#a1a1aa] transition-colors cursor-pointer"
+              title={userName ? `Profile: ${userName}` : "Click to enter your name"}
+              className="h-9 px-3 rounded-full bg-[#121215] border-2 border-[#27272a] hover:border-[#fafafa] flex items-center justify-center gap-2 text-[#fafafa] transition-all cursor-pointer shadow-sm group"
             >
               {userName ? (
                 <>
-                  <span className="font-['JetBrains_Mono'] text-[11px] font-semibold tracking-wider text-[#fafafa]">
+                  <span className="w-5 h-5 rounded-full bg-[#fafafa] text-[#09090b] flex items-center justify-center font-['JetBrains_Mono'] text-[10px] font-bold">
                     {getInitials(userName)}
                   </span>
-                  <span className="hidden md:inline font-['Geist'] text-[12px] text-[#c4c7c8] max-w-[90px] truncate">
+                  <span className="font-['Geist'] text-[13px] text-[#fafafa] max-w-[100px] truncate font-medium">
                     {userName}
                   </span>
                 </>
               ) : (
-                <span className="material-symbols-outlined text-[16px]">person</span>
+                <>
+                  <span className="material-symbols-outlined text-[18px] text-[#fafafa] group-hover:scale-110 transition-transform">
+                    person
+                  </span>
+                  <span className="text-[12px] font-['Geist'] text-[#c4c7c8] hidden sm:inline">
+                    Add Name
+                  </span>
+                </>
               )}
             </button>
 
@@ -222,9 +250,8 @@ export default function Header({
                       <button
                         type="button"
                         onClick={() => {
-                          setUserName("");
+                          onUpdateUserName("");
                           setTempName("");
-                          localStorage.removeItem("stitch_expense_tracker_user");
                           setShowProfileModal(false);
                         }}
                         className="px-2.5 py-1.5 text-[11px] font-['JetBrains_Mono'] text-[#ef4444] hover:bg-[#ef4444]/10 rounded transition-colors cursor-pointer"
