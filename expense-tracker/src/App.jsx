@@ -1,122 +1,98 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from "react";
+import Header from "./components/Header";
+import ExpensesView from "./components/ExpensesView";
+import AnalyticsView from "./components/AnalyticsView";
 
-function App() {
-  const [count, setCount] = useState(0)
+const LOCAL_STORAGE_KEY = "stitch_expense_tracker_data";
+
+export default function App() {
+  const [currentView, setCurrentView] = useState("expenses"); // "expenses" | "analytics"
+
+  // User's today date string in YYYY-MM-DD
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const [selectedDate, setSelectedDate] = useState(todayStr);
+
+  const [expenses, setExpenses] = useState(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load expenses from localStorage:", err);
+    }
+    return [];
+  });
+
+  // Sync to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(expenses));
+    } catch (err) {
+      console.error("Failed to save to localStorage:", err);
+    }
+  }, [expenses]);
+
+  const handleAddExpense = (newExp) => {
+    const txDate = newExp.date ? new Date(newExp.date) : new Date();
+    const isToday = new Date().toDateString() === txDate.toDateString();
+    const formattedDisplay = isToday
+      ? `Today, ${txDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`
+      : txDate.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+
+    const item = {
+      id: "tx-" + Date.now(),
+      name: newExp.name,
+      amount: newExp.amount,
+      category: newExp.category,
+      note: newExp.note,
+      date: txDate.toISOString(),
+      displayDate: formattedDisplay,
+    };
+    setExpenses((prev) => [item, ...prev]);
+  };
+
+  const handleDeleteExpense = (id) => {
+    setExpenses((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleResetData = () => {
+    if (window.confirm("Clear all expense data?")) {
+      setExpenses([]);
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-[#09090b] text-[#e4e1e6] flex flex-col font-['Geist'] selection:bg-[#fafafa] selection:text-[#09090b]">
+      {/* Global Header with interactive calendar badge on top left */}
+      <Header
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        onReset={handleResetData}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        todayStr={todayStr}
+      />
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Main Workspace with view transition */}
+      <main className="w-full pt-14 flex-1 flex flex-col">
+        {currentView === "expenses" ? (
+          <ExpensesView
+            expenses={expenses}
+            onAddExpense={handleAddExpense}
+            onDeleteExpense={handleDeleteExpense}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            todayStr={todayStr}
+          />
+        ) : (
+          <AnalyticsView expenses={expenses} />
+        )}
+      </main>
+    </div>
+  );
 }
-
-export default App

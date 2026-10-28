@@ -1,4 +1,11 @@
 {
+  "name": "expense-tracker-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix expense-tracker run dev",
+    "build": "npm --prefix expense-tracker run build",
+    "preview": "npm --prefix expense-tracker run preview"
+  },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "tailwindcss": "^4.3.3"
