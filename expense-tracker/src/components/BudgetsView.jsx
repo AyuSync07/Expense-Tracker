@@ -23,26 +23,46 @@ export default function BudgetsView({
   const currentOverallLimit =
     period === "daily" ? dailyLimit : period === "monthly" ? monthlyLimit : yearlyLimit;
 
-  // Filter expenses for selected period
+  // Independent period calculations:
+  // Daily checks today only. Monthly checks this calendar month only.
+  // If daily is exceeded, monthly stays completely GREEN as long as month total <= monthlyLimit!
   const now = new Date();
-  const filteredByPeriod = expenses.filter((e) => {
+
+  // 1. Today's expenses & status
+  const todayExpenses = expenses.filter((e) => {
+    if (!e.date) return false;
+    return new Date(e.date).toDateString() === now.toDateString();
+  });
+  const dailySpent = todayExpenses.reduce((sum, item) => sum + item.amount, 0);
+  const isDailyOver = dailyLimit > 0 && dailySpent > dailyLimit;
+
+  // 2. This month's expenses & status
+  const monthExpenses = expenses.filter((e) => {
     if (!e.date) return false;
     const d = new Date(e.date);
-    if (period === "daily") {
-      return d.toDateString() === now.toDateString();
-    } else if (period === "monthly") {
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    } else if (period === "yearly") {
-      return d.getFullYear() === now.getFullYear();
-    }
-    return true;
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
+  const monthlySpent = monthExpenses.reduce((sum, item) => sum + item.amount, 0);
+  const isMonthlyOver = monthlyLimit > 0 && monthlySpent > monthlyLimit;
 
-  const totalSpent = filteredByPeriod.reduce((sum, item) => sum + item.amount, 0);
+  // 3. This year's expenses & status
+  const yearExpenses = expenses.filter((e) => {
+    if (!e.date) return false;
+    return new Date(e.date).getFullYear() === now.getFullYear();
+  });
+  const yearlySpent = yearExpenses.reduce((sum, item) => sum + item.amount, 0);
+  const isYearlyOver = yearlyLimit > 0 && yearlySpent > yearlyLimit;
+
+  // Active view metrics
+  const totalSpent =
+    period === "daily" ? dailySpent : period === "monthly" ? monthlySpent : yearlySpent;
+  const isOverBudget =
+    period === "daily" ? isDailyOver : period === "monthly" ? isMonthlyOver : isYearlyOver;
   const remaining = Math.max(0, currentOverallLimit - totalSpent);
   const percentUsed =
     currentOverallLimit > 0 ? Math.min(100, (totalSpent / currentOverallLimit) * 100) : 0;
-  const isOverBudget = currentOverallLimit > 0 && totalSpent > currentOverallLimit;
+  const filteredByPeriod =
+    period === "daily" ? todayExpenses : period === "monthly" ? monthExpenses : yearExpenses;
 
   // Handle setting linked base budget
   const handleSetBaseBudget = (e) => {
@@ -213,8 +233,10 @@ export default function BudgetsView({
                 Target spending for today
               </div>
             </div>
-            <div className="pt-2 border-t border-[#27272a] font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8]">
-              {period === "daily" ? "● Currently active view" : "Click to view daily"}
+            <div className={`pt-2 border-t border-[#27272a] font-['JetBrains_Mono'] text-[11px] ${
+              isDailyOver ? "text-rose-400 font-medium" : "text-[#c4c7c8]"
+            }`}>
+              {period === "daily" ? (isDailyOver ? "⚠ Over daily allowance" : "● Currently active view") : isDailyOver ? "⚠ Over daily allowance" : "Click to view daily"}
             </div>
           </div>
 
@@ -239,8 +261,16 @@ export default function BudgetsView({
                 Target spending this month
               </div>
             </div>
-            <div className="pt-2 border-t border-[#27272a] font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8]">
-              {period === "monthly" ? "● Currently active view" : "Click to view monthly"}
+            <div className={`pt-2 border-t border-[#27272a] font-['JetBrains_Mono'] text-[11px] ${
+              isMonthlyOver ? "text-rose-400 font-medium" : "text-[#c4c7c8]"
+            }`}>
+              {period === "monthly"
+                ? isMonthlyOver
+                  ? "⚠ Over monthly limit"
+                  : "● Currently active view"
+                : isMonthlyOver
+                ? "⚠ Over monthly limit"
+                : "● Within monthly budget"}
             </div>
           </div>
 

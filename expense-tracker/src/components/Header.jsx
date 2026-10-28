@@ -122,40 +122,50 @@ export default function Header({
               </div>
             </div>
 
-            {/* Desktop Calendar Filter Widget */}
-            <div data-tour="header-calendar-filter" className="relative hidden md:flex items-center shrink-0">
-              <div
-                onClick={() => dateInputRef.current?.showPicker?.() || dateInputRef.current?.focus()}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#27272a] bg-[#121215] hover:border-white transition-colors rounded-lg cursor-pointer group shadow-sm"
-                title="Filter by date"
-              >
-                <span className="material-symbols-outlined text-[17px] text-white">calendar_month</span>
-                <span className="font-['JetBrains_Mono'] text-[12px] text-white font-medium">
-                  {displayDateFormatted}
-                </span>
-                {isToday && (
-                  <span className="text-[10px] bg-[#27272a] px-1.5 py-0.5 rounded text-[#a1a1aa] font-['JetBrains_Mono']">
-                    Today
-                  </span>
-                )}
-              </div>
-              <input
-                ref={dateInputRef}
-                type="date"
-                value={selectedDate}
-                onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
-                className="absolute inset-0 opacity-0 cursor-pointer pointer-events-auto w-full h-full"
-              />
-            </div>
+            {/* Desktop Calendar Filter Widget (Hidden on Budgets view) */}
+            {currentView !== "budgets" && (
+              <>
+                <div data-tour="header-calendar-filter" className="relative hidden md:flex items-center shrink-0">
+                  <div
+                    onClick={() => dateInputRef.current?.showPicker?.() || dateInputRef.current?.focus()}
+                    className="flex items-center gap-1.5 px-3 py-1.5 border border-[#27272a] bg-[#121215] hover:border-white transition-colors rounded-lg cursor-pointer group shadow-sm"
+                    title="Filter by date (past & today only)"
+                  >
+                    <span className="material-symbols-outlined text-[17px] text-white">calendar_month</span>
+                    <span className="font-['JetBrains_Mono'] text-[12px] text-white font-medium">
+                      {displayDateFormatted}
+                    </span>
+                    {isToday && (
+                      <span className="text-[10px] bg-[#27272a] px-1.5 py-0.5 rounded text-[#a1a1aa] font-['JetBrains_Mono']">
+                        Today
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    ref={dateInputRef}
+                    type="date"
+                    max={todayStr}
+                    value={selectedDate}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && val <= todayStr) {
+                        setSelectedDate(val);
+                      }
+                    }}
+                    className="absolute inset-0 opacity-0 cursor-pointer pointer-events-auto w-full h-full"
+                  />
+                </div>
 
-            {!isToday && (
-              <button
-                type="button"
-                onClick={() => setSelectedDate(todayStr)}
-                className="text-[11px] font-['JetBrains_Mono'] text-[#a1a1aa] hover:text-white underline transition-colors cursor-pointer shrink-0 hidden md:inline"
-              >
-                Back to Today
-              </button>
+                {!isToday && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDate(todayStr)}
+                    className="text-[11px] font-['JetBrains_Mono'] text-[#a1a1aa] hover:text-white underline transition-colors cursor-pointer shrink-0 hidden md:inline"
+                  >
+                    Back to Today
+                  </button>
+                )}
+              </>
             )}
           </div>
 
@@ -198,24 +208,32 @@ export default function Header({
 
           {/* Right Section: Mobile Date Pill + Actions */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-            {/* Mobile Date Filter Button */}
-            <div className="relative md:hidden flex items-center">
-              <div
-                onClick={() => dateInputRef.current?.showPicker?.() || dateInputRef.current?.focus()}
-                className="flex items-center gap-1 px-2.5 py-1.5 bg-[#141417] border border-[#27272a] rounded-lg text-white font-['JetBrains_Mono'] text-[11px] font-medium active:scale-95 transition-transform"
-              >
-                <span className="material-symbols-outlined text-[15px] text-[#a1a1aa]">calendar_today</span>
-                <span>{displayDateShort}</span>
-                {!isToday && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+            {/* Mobile Date Filter Button (Hidden on Budgets view) */}
+            {currentView !== "budgets" && (
+              <div className="relative md:hidden flex items-center">
+                <div
+                  onClick={() => dateInputRef.current?.showPicker?.() || dateInputRef.current?.focus()}
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-[#141417] border border-[#27272a] rounded-lg text-white font-['JetBrains_Mono'] text-[11px] font-medium active:scale-95 transition-transform"
+                >
+                  <span className="material-symbols-outlined text-[15px] text-[#a1a1aa]">calendar_today</span>
+                  <span>{displayDateShort}</span>
+                  {!isToday && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                </div>
+                <input
+                  ref={dateInputRef}
+                  type="date"
+                  max={todayStr}
+                  value={selectedDate}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val && val <= todayStr) {
+                      setSelectedDate(val);
+                    }
+                  }}
+                  className="absolute inset-0 opacity-0 cursor-pointer pointer-events-auto w-full h-full"
+                />
               </div>
-              <input
-                ref={dateInputRef}
-                type="date"
-                value={selectedDate}
-                onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
-                className="absolute inset-0 opacity-0 cursor-pointer pointer-events-auto w-full h-full"
-              />
-            </div>
+            )}
 
             {/* Desktop Action Controls */}
             <div className="hidden md:flex items-center gap-2">

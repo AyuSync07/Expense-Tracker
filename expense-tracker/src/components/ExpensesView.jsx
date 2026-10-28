@@ -39,40 +39,46 @@ export default function ExpensesView({
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("ALL");
-  const [filterMode, setFilterMode] = useState("ALL"); // "ALL" | "SELECTED_DATE" | "SELECTED_MONTH"
+  const [filterMode, setFilterMode] = useState("SELECTED_DATE"); // Defaults to SELECTED_DATE so old expenses only show on their date
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
 
-  // Filter expenses
-  const filtered = expenses.filter((item) => {
-    const matchesSearch =
-      searchTerm === "" ||
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.note && item.note.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Filter expenses strictly by date and category
+  const filtered = expenses
+    .filter((item) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.note && item.note.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesCategory = filterCategory === "ALL" || item.category === filterCategory;
+      const matchesCategory = filterCategory === "ALL" || item.category === filterCategory;
 
-    let matchesDate = true;
-    const itemDateStr = item.date ? item.date.slice(0, 10) : "";
-    if (filterMode === "SELECTED_DATE") {
-      matchesDate = itemDateStr === selectedDate;
-    } else if (filterMode === "SELECTED_MONTH") {
-      matchesDate = itemDateStr.slice(0, 7) === selectedDate.slice(0, 7);
-    }
+      let matchesDate = true;
+      const itemDateStr = item.date ? item.date.slice(0, 10) : "";
+      if (filterMode === "SELECTED_DATE") {
+        matchesDate = itemDateStr === selectedDate;
+      } else if (filterMode === "SELECTED_MONTH") {
+        matchesDate = itemDateStr.slice(0, 7) === selectedDate.slice(0, 7);
+      }
 
-    return matchesSearch && matchesCategory && matchesDate;
-  });
+      return matchesSearch && matchesCategory && matchesDate;
+    })
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   // Dynamic budget limit based on filterMode:
-  // User preference: default/all-time comparisons use Daily budget rather than Yearly
+  // - On specific date (SELECTED_DATE): evaluate against dailyLimit (shows RED only if today/day exceeds daily budget)
+  // - On month (SELECTED_MONTH): evaluate against monthlyLimit (stays GREEN if within monthly budget, even if a day exceeded daily)
   const baseMonthly = budgets?.baseMonthly || 0;
   const dailyLimit = baseMonthly / 30;
+  const monthlyLimit = baseMonthly;
+
   const activeBudgetLimit =
-    filterMode === "SELECTED_MONTH" ? baseMonthly : dailyLimit;
+    filterMode === "SELECTED_DATE" ? dailyLimit : monthlyLimit;
 
   // Metrics computed over filtered set
   const totalSpent = filtered.reduce((sum, item) => sum + item.amount, 0);
   const budgetLeft = Math.max(0, activeBudgetLimit - totalSpent);
+  const isOverLimit = activeBudgetLimit > 0 && totalSpent > activeBudgetLimit;
   const budgetUsedPercent =
     activeBudgetLimit > 0 ? Math.min(100, (totalSpent / activeBudgetLimit) * 100).toFixed(1) : "0.0";
 
@@ -96,8 +102,8 @@ export default function ExpensesView({
     e.preventDefault();
     if (!name.trim() || !amount || parseFloat(amount) <= 0) return;
 
-    // Use txDate or fallback to today
-    const chosenDateStr = txDate || todayStr;
+    // Use txDate or fallback to today (never allow future dates)
+    const chosenDateStr = txDate && txDate <= todayStr ? txDate : todayStr;
     const expenseDateTime = new Date(`${chosenDateStr}T12:00:00`).toISOString();
 
     onAddExpense({
@@ -107,6 +113,12 @@ export default function ExpensesView({
       date: expenseDateTime,
       note: note.trim() || "Manual entry",
     });
+
+    // If an old date was added, switch view to that old date so it shows in that date only
+    if (chosenDateStr !== selectedDate) {
+      setSelectedDate(chosenDateStr);
+      setFilterMode("SELECTED_DATE");
+    }
 
     setName("");
     setAmount("");
@@ -218,10 +230,12 @@ export default function ExpensesView({
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#09090b] border border-[#27272a]">
             <input
               type="date"
+              max={todayStr}
               value={selectedDate}
               onChange={(e) => {
-                if (e.target.value) {
-                  setSelectedDate(e.target.value);
+                const val = e.target.value;
+                if (val && val <= todayStr) {
+                  setSelectedDate(val);
                   setFilterMode("SELECTED_DATE");
                   setCurrentPage(1);
                 }
@@ -238,14 +252,18 @@ export default function ExpensesView({
         <div className="bg-[#121215] border border-[#27272a] rounded-xl p-6 flex flex-col justify-between transition-colors hover:border-[#444748]/60">
           <div className="flex items-center justify-between">
             <span className="font-['Geist'] font-medium text-[16px] text-[#a1a1aa]">
-              Total Spent {filterMode === "SELECTED_DATE" ? `(${selectedDateFormatted})` : ""}
+              {filterMode === "SELECTED_DATE" ? `Spent on ${selectedDateFormatted}` : filterMode === "SELECTED_MONTH" ? "Spent This Month" : "Total Money Spent"}
             </span>
-            <span className="font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] px-2 py-0.5 border border-[#27272a] rounded bg-[#09090b]">
-              {filterMode}
+            <span className={`font-['JetBrains_Mono'] text-[11px] px-2 py-0.5 border rounded ${
+              isOverLimit ? "border-rose-500/50 bg-rose-500/10 text-rose-400 font-semibold" : "border-[#27272a] bg-[#09090b] text-[#a1a1aa]"
+            }`}>
+              {filterMode === "SELECTED_DATE" ? "Daily View" : filterMode === "SELECTED_MONTH" ? "Monthly View" : "All Time"}
             </span>
           </div>
           <div className="mt-4 mb-3">
-            <div className="font-['JetBrains_Mono'] font-semibold text-[30px] leading-tight text-[#fafafa] tracking-tight">
+            <div className={`font-['JetBrains_Mono'] font-semibold text-[30px] leading-tight tracking-tight ${
+              isOverLimit ? "text-rose-400" : "text-[#fafafa]"
+            }`}>
               ₹{totalSpent.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <div className="font-['Geist'] text-[12px] text-[#a1a1aa] mt-1">
@@ -255,13 +273,17 @@ export default function ExpensesView({
           <div className="flex items-center justify-between gap-2 pt-3 border-t border-[#27272a]/60">
             <div className="flex items-center gap-1.5 font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa]">
               <span>Budget left:</span>
-              <span className="text-[#fafafa] font-medium">
+              <span className={`font-medium ${isOverLimit ? "text-rose-400 font-semibold" : "text-[#fafafa]"}`}>
                 {activeBudgetLimit > 0
-                  ? `₹${budgetLeft.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  ? isOverLimit
+                    ? `Over budget by ₹${(totalSpent - activeBudgetLimit).toFixed(2)}`
+                    : `₹${budgetLeft.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                   : "No budget set"}
               </span>
             </div>
-            <span className="font-['JetBrains_Mono'] text-[11px] text-[#c4c7c8] bg-[#1f1f22] px-2 py-0.5 rounded">
+            <span className={`font-['JetBrains_Mono'] text-[11px] px-2 py-0.5 rounded ${
+              isOverLimit ? "bg-rose-500/20 text-rose-400 font-bold" : "bg-[#1f1f22] text-[#c4c7c8]"
+            }`}>
               {activeBudgetLimit > 0 ? `${budgetUsedPercent}% used` : "0% used"}
             </span>
           </div>
@@ -408,9 +430,15 @@ export default function ExpensesView({
                   <input
                     id="expense-date"
                     type="date"
+                    max={todayStr}
                     required
                     value={txDate}
-                    onChange={(e) => setTxDate(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && val <= todayStr) {
+                        setTxDate(val);
+                      }
+                    }}
                     className="w-full bg-transparent text-[13px] font-['JetBrains_Mono'] text-[#fafafa] focus:outline-none cursor-pointer"
                   />
                 </div>
