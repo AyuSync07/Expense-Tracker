@@ -9,7 +9,7 @@ export default function BudgetsView({
   onGoToExpenses,
   isInitialSetup
 }) {
-  const [period, setPeriod] = useState("monthly"); // "daily" | "monthly" | "yearly"
+  const [period, setPeriod] = useState("daily"); // "daily" | "monthly" | "yearly"
   const [budgetInput, setBudgetInput] = useState("");
   const [editingCategory, setEditingCategory] = useState("Overall");
   const [catInput, setCatInput] = useState("");
@@ -236,7 +236,7 @@ export default function BudgetsView({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {isOverBudget ? (
               <span className="px-3 py-1 rounded bg-[#ef4444]/15 border border-[#ef4444]/40 text-[#ef4444] font-['JetBrains_Mono'] text-[12px] flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[16px]">warning</span>

@@ -66,32 +66,33 @@ export default function Header({
     : "Pick Date";
 
   return (
-    <header className="fixed top-0 left-0 w-full z-30 bg-[#09090b]/95 backdrop-blur-sm border-b border-[#27272a]">
-      <div className="h-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between gap-4">
+    <>
+      <header className="fixed top-0 left-0 w-full z-30 bg-[#09090b]/95 backdrop-blur-sm border-b border-[#27272a]">
+      <div className="h-14 max-w-7xl mx-auto px-3 sm:px-6 lg:px-12 flex items-center justify-between gap-2 sm:gap-4">
         {/* Brand & Left Date Picker */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <span className="w-2 h-2 rounded-full bg-[#fafafa]"></span>
-            <span className="font-['Geist'] font-medium text-[16px] text-[#fafafa] tracking-tight select-none">
+            <span className="font-['Geist'] font-medium text-[14px] sm:text-[16px] text-[#fafafa] tracking-tight truncate max-w-[100px] xs:max-w-[150px] sm:max-w-none select-none">
               {userName ? `${userName}'s Expenses` : "Personal Expenses"}
             </span>
           </div>
 
           {/* Interactive Date Picker Widget with prominent highlight container */}
-          <div data-tour="header-calendar-filter" className="relative flex items-center">
+          <div data-tour="header-calendar-filter" className="relative flex items-center shrink-0">
             <div
               onClick={() => dateInputRef.current?.showPicker?.() || dateInputRef.current?.focus()}
-              className="flex items-center gap-2 px-3 py-1.5 border border-[#27272a] bg-[#121215] hover:border-[#fafafa] hover:bg-[#1a1a1e] transition-all rounded-lg cursor-pointer group shadow-sm"
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 border border-[#27272a] bg-[#121215] hover:border-[#fafafa] hover:bg-[#1a1a1e] transition-all rounded-lg cursor-pointer group shadow-sm"
               title="Click to view expenses for a previous or specific date"
             >
-              <span className="material-symbols-outlined text-[17px] text-[#fafafa] group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[16px] sm:text-[17px] text-[#fafafa] group-hover:scale-110 transition-transform">
                 calendar_month
               </span>
-              <span className="font-['JetBrains_Mono'] text-[12px] text-[#fafafa] font-medium tracking-tight">
+              <span className="font-['JetBrains_Mono'] text-[11px] sm:text-[12px] text-[#fafafa] font-medium tracking-tight">
                 {displayDateFormatted}
               </span>
               {isToday && (
-                <span className="text-[10px] bg-[#27272a] px-1.5 py-0.5 rounded text-[#a1a1aa] font-['JetBrains_Mono']">
+                <span className="text-[9px] sm:text-[10px] bg-[#27272a] px-1 sm:px-1.5 py-0.5 rounded text-[#a1a1aa] font-['JetBrains_Mono'] hidden xs:inline">
                   Today
                 </span>
               )}
@@ -116,7 +117,7 @@ export default function Header({
             <button
               type="button"
               onClick={() => setSelectedDate(todayStr)}
-              className="text-[11px] font-['JetBrains_Mono'] text-[#a1a1aa] hover:text-[#fafafa] underline transition-colors cursor-pointer"
+              className="text-[10px] sm:text-[11px] font-['JetBrains_Mono'] text-[#a1a1aa] hover:text-[#fafafa] underline transition-colors cursor-pointer shrink-0 hidden sm:inline"
               title="Jump back to today"
             >
               Back to Today
@@ -124,8 +125,8 @@ export default function Header({
           )}
         </div>
 
-        {/* View Switcher Navigation */}
-        <nav className="flex items-center gap-6 h-14">
+        {/* View Switcher Navigation (Desktop) */}
+        <nav className="hidden md:flex items-center gap-6 h-14">
           <button
             type="button"
             onClick={() => setCurrentView("budgets")}
@@ -282,5 +283,51 @@ export default function Header({
         </div>
       </div>
     </header>
+
+    {/* Mobile & Tablet Bottom Navigation Bar */}
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-[#0c0c0e]/95 backdrop-blur-md border-t border-[#27272a] h-14 flex items-center justify-around px-2">
+      <button
+        type="button"
+        onClick={() => setCurrentView("budgets")}
+        className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
+          currentView === "budgets" ? "text-[#fafafa]" : "text-[#71717a] hover:text-[#a1a1aa]"
+        }`}
+      >
+        <span className="material-symbols-outlined text-[19px]">account_balance_wallet</span>
+        <span className="font-['Geist'] text-[11px] font-medium tracking-tight">Budgets</span>
+        {currentView === "budgets" && (
+          <span className="w-1 h-1 rounded-full bg-white mt-0.5" />
+        )}
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setCurrentView("expenses")}
+        className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
+          currentView === "expenses" ? "text-[#fafafa]" : "text-[#71717a] hover:text-[#a1a1aa]"
+        }`}
+      >
+        <span className="material-symbols-outlined text-[19px]">receipt_long</span>
+        <span className="font-['Geist'] text-[11px] font-medium tracking-tight">Expenses</span>
+        {currentView === "expenses" && (
+          <span className="w-1 h-1 rounded-full bg-white mt-0.5" />
+        )}
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setCurrentView("analytics")}
+        className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
+          currentView === "analytics" ? "text-[#fafafa]" : "text-[#71717a] hover:text-[#a1a1aa]"
+        }`}
+      >
+        <span className="material-symbols-outlined text-[19px]">insights</span>
+        <span className="font-['Geist'] text-[11px] font-medium tracking-tight">Analytics</span>
+        {currentView === "analytics" && (
+          <span className="w-1 h-1 rounded-full bg-white mt-0.5" />
+        )}
+      </button>
+    </nav>
+  </>
   );
 }

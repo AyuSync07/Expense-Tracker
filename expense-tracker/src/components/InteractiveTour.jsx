@@ -288,8 +288,8 @@ export default function InteractiveTour({
                 ? targetRect.top + targetRect.height + 14
                 : Math.max(70, targetRect.top - 46),
               left: Math.min(
-                window.innerWidth - 120,
-                Math.max(120, targetRect.left + targetRect.width / 2)
+                window.innerWidth - 80,
+                Math.max(80, targetRect.left + targetRect.width / 2)
               ),
             }}
             className="fixed -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center animate-bounce transition-all duration-300"
@@ -310,10 +310,10 @@ export default function InteractiveTour({
 
       {/* 3. Floating Dialogue Card */}
       <div
-        className={`fixed z-50 w-[380px] max-w-[calc(100vw-32px)] bg-[#141417] border-2 border-zinc-500 rounded-2xl shadow-2xl shadow-black p-5 flex flex-col gap-3.5 transition-all duration-300 pointer-events-auto ${
+        className={`fixed z-50 w-full sm:w-[380px] max-w-[calc(100vw-32px)] bg-[#141417] border-2 border-zinc-500 rounded-2xl shadow-2xl shadow-black p-4 sm:p-5 flex flex-col gap-3.5 transition-all duration-300 pointer-events-auto ${
           step.isProfileStep
             ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            : "bottom-6 right-6"
+            : "bottom-18 sm:bottom-6 right-4 sm:right-6 left-4 sm:left-auto"
         }`}
       >
         {/* Card Header */}

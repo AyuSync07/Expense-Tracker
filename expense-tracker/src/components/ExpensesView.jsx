@@ -45,14 +45,11 @@ export default function ExpensesView({
   });
 
   // Dynamic budget limit based on filterMode:
-  // Daily budget = baseMonthly / 30; Monthly = baseMonthly; All Time = baseMonthly * 12
+  // User preference: default/all-time comparisons use Daily budget rather than Yearly
   const baseMonthly = budgets?.baseMonthly || 0;
+  const dailyLimit = baseMonthly / 30;
   const activeBudgetLimit =
-    filterMode === "SELECTED_DATE"
-      ? baseMonthly / 30
-      : filterMode === "SELECTED_MONTH"
-      ? baseMonthly
-      : baseMonthly * 12;
+    filterMode === "SELECTED_MONTH" ? baseMonthly : dailyLimit;
 
   // Metrics computed over filtered set
   const totalSpent = filtered.reduce((sum, item) => sum + item.amount, 0);
@@ -230,6 +227,9 @@ export default function ExpensesView({
           <div className="mt-4 mb-3">
             <div className="font-['JetBrains_Mono'] font-semibold text-[30px] leading-tight text-[#fafafa] tracking-tight">
               ₹{totalSpent.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <div className="font-['Geist'] text-[12px] text-[#a1a1aa] mt-1">
+              Target: ₹{activeBudgetLimit.toLocaleString("en-IN", { maximumFractionDigits: 2 })} ({filterMode === "SELECTED_MONTH" ? "Monthly" : "Daily"})
             </div>
           </div>
           <div className="flex items-center justify-between gap-2 pt-3 border-t border-[#27272a]/60">
@@ -548,8 +548,8 @@ export default function ExpensesView({
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto w-full">
+              <table className="w-full min-w-[520px] text-left border-collapse">
                 <thead>
                   <tr className="border-b border-[#27272a] bg-[#09090b]/60 font-['JetBrains_Mono'] text-[11px] text-[#a1a1aa] uppercase">
                     <th className="py-3 px-5 font-normal tracking-wider">Expense Name</th>

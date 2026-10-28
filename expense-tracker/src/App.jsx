@@ -208,7 +208,7 @@ export default function App() {
       />
 
       {/* Main Workspace */}
-      <main className="w-full pt-14 flex-1 flex flex-col">
+      <main className="w-full pt-14 pb-20 md:pb-8 flex-1 flex flex-col">
         {currentView === "budgets" && (
           <BudgetsView
             expenses={activeExpenses}

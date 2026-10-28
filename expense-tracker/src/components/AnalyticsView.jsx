@@ -397,8 +397,8 @@ export default function AnalyticsView({ expenses }) {
               </div>
             </div>
           ) : (
-            <div className="py-4">
-              <div className="relative h-44 w-full flex items-end justify-between gap-1.5 sm:gap-2 px-2">
+            <div className="py-4 overflow-x-auto">
+              <div className="relative h-44 min-w-[320px] w-full flex items-end justify-between gap-1.5 sm:gap-2 px-2">
                 {dynamicBars.map((bar) => (
                   <div
                     key={bar.label}
@@ -460,8 +460,8 @@ export default function AnalyticsView({ expenses }) {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left font-['Geist'] text-[14px] text-[#e4e1e6]">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full min-w-[540px] text-left font-['Geist'] text-[14px] text-[#e4e1e6]">
             <thead className="font-['JetBrains_Mono'] text-[11px] uppercase text-[#a1a1aa] tracking-wider bg-[#0e0e11] border-y border-[#27272a]">
               <tr>
                 <th className="py-3 px-6 font-medium">Category</th>
