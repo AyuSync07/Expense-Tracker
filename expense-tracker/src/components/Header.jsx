@@ -82,39 +82,14 @@ export default function Header({
       <header className="fixed top-0 left-0 w-full z-30 bg-[#09090b]/95 backdrop-blur-md border-b border-[#27272a]">
         <div className="h-14 max-w-7xl mx-auto px-3 sm:px-6 lg:px-12 flex items-center justify-between gap-2">
           
-          {/* Left Section: Brand / Profile Greeting */}
+          {/* Left Section: Brand / Title */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            {/* Mobile Profile Trigger (Leftmost on mobile for quick access) */}
-            <div data-tour="profile-avatar-button" className="relative md:hidden shrink-0" ref={profileDropdownRef}>
-              <button
-                type="button"
-                onClick={handleOpenProfile}
-                title="Edit Profile"
-                className="w-8 h-8 rounded-full bg-[#18181b] border border-[#3f3f46] flex items-center justify-center text-white active:scale-95 transition-transform"
-              >
-                {userName ? (
-                  <span className="font-['JetBrains_Mono'] text-[11px] font-bold">
-                    {getInitials(userName)}
-                  </span>
-                ) : (
-                  <span className="material-symbols-outlined text-[18px] text-[#a1a1aa]">person</span>
-                )}
-              </button>
-            </div>
-
             {/* Brand Title */}
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="w-2 h-2 rounded-full bg-white shrink-0 hidden md:inline-block" />
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-white shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span className="font-['Geist'] font-semibold text-[14px] sm:text-[16px] text-white tracking-tight truncate">
-                  {userName ? (
-                    <>
-                      <span className="md:hidden">Hi, {userName.split(" ")[0]}</span>
-                      <span className="hidden md:inline">{userName}'s Expenses</span>
-                    </>
-                  ) : (
-                    "Expense Tracker"
-                  )}
+                  {userName ? `${userName}'s Expenses` : "Personal Expenses"}
                 </span>
                 <span className="text-[10px] text-[#a1a1aa] font-['JetBrains_Mono'] -mt-0.5 md:hidden">
                   Personal Finance
@@ -235,7 +210,7 @@ export default function Header({
               </div>
             )}
 
-            {/* Desktop Action Controls */}
+            {/* Desktop Action Controls (Quick Tour & Clear Data) */}
             <div className="hidden md:flex items-center gap-2">
               <button
                 type="button"
@@ -254,31 +229,32 @@ export default function Header({
                 <span className="material-symbols-outlined text-[14px]">restart_alt</span>
                 <span>Clear Data</span>
               </button>
+            </div>
 
-              {/* Desktop Profile Avatar */}
-              <div data-tour="profile-avatar-button" className="relative" ref={profileDropdownRef}>
-                <button
-                  type="button"
-                  onClick={handleOpenProfile}
-                  className="h-9 px-3 rounded-full bg-[#121215] border-2 border-[#27272a] hover:border-white flex items-center justify-center gap-2 text-white transition-all cursor-pointer shadow-sm group"
-                >
-                  {userName ? (
-                    <>
-                      <span className="w-5 h-5 rounded-full bg-white text-zinc-950 flex items-center justify-center font-['JetBrains_Mono'] text-[10px] font-bold">
-                        {getInitials(userName)}
-                      </span>
-                      <span className="font-['Geist'] text-[13px] text-white max-w-[100px] truncate font-medium">
-                        {userName}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-[18px]">person</span>
-                      <span className="text-[12px] font-['Geist'] text-[#c4c7c8]">Add Name</span>
-                    </>
-                  )}
-                </button>
-              </div>
+            {/* Unified Profile Avatar Button on the Right (Visible on BOTH mobile & desktop) */}
+            <div data-tour="profile-avatar-button" className="relative shrink-0" ref={profileDropdownRef}>
+              <button
+                type="button"
+                onClick={handleOpenProfile}
+                title={userName ? `Profile: ${userName}` : "Click to enter your name"}
+                className="h-8 sm:h-9 px-2 sm:px-3 rounded-full bg-[#121215] border-2 border-[#27272a] hover:border-white flex items-center justify-center gap-2 text-white transition-all cursor-pointer shadow-sm group active:scale-95"
+              >
+                {userName ? (
+                  <>
+                    <span className="w-5 h-5 rounded-full bg-white text-zinc-950 flex items-center justify-center font-['JetBrains_Mono'] text-[10px] font-bold">
+                      {getInitials(userName)}
+                    </span>
+                    <span className="font-['Geist'] text-[13px] text-white max-w-[100px] truncate font-medium hidden sm:inline">
+                      {userName}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[18px]">person</span>
+                    <span className="text-[12px] font-['Geist'] text-[#c4c7c8] hidden sm:inline">Add Name</span>
+                  </>
+                )}
+              </button>
             </div>
 
             {/* Mobile Overflow Menu Button (•••) */}

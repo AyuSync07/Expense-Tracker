@@ -158,7 +158,18 @@ export default function InteractiveTour({
   const updatePosition = useCallback(() => {
     if (!isOpen || !step) return;
 
-    const el = document.querySelector(step.selector);
+    // Search for matching elements and pick the visible one with real dimensions
+    const candidates = document.querySelectorAll(step.selector);
+    let el = null;
+    for (const c of candidates) {
+      const r = c.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) {
+        el = c;
+        break;
+      }
+    }
+    if (!el && candidates.length > 0) el = candidates[0];
+
     if (!el) {
       setTargetRect(null);
       return;
